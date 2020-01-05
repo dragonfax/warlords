@@ -26,7 +26,7 @@ func main() {
 	}
 	defer window.Destroy()
 
-	surface, err := window.GetSurface()
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		panic(err)
 	}
@@ -41,11 +41,14 @@ func main() {
 	var y int32 = 0
 	for running {
 
-		surface.FillRect(nil, 0)
+		renderer.SetDrawColor(0, 0, 0, 0xFF)
+		renderer.Clear()
 
-		rect := sdl.Rect{x, y, 200, 200}
-		surface.FillRect(&rect, 0xffff0000)
-		window.UpdateSurface()
+		rect := sdl.Rect{X: x, Y: y, W: 200, H: 200}
+		renderer.SetDrawColor(0xFF, 0, 0, 0xFF)
+		renderer.FillRect(&rect)
+
+		renderer.Present()
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch e := event.(type) {
