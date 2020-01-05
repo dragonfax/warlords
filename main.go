@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-
+	"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -13,6 +12,10 @@ const MIN_AXIS = -MAX_AXIS
 const AXIS_RANGE = MAX_AXIS * 2
 const AXIS_WIDTH_STEP = float32(SCREEN_WIDTH) / float32(AXIS_RANGE)
 const AXIS_HEIGHT_STEP = float32(SCREEN_HEIGHT) / float32(AXIS_RANGE)
+
+var grey sdl.Color = sdl.Color{0x80, 0x80, 0x80, 0xFF}
+var red sdl.Color = sdl.Color{0xff, 0x00, 0x00, 0xFF}
+var blue sdl.Color = sdl.Color{0x00, 0x00, 0xff, 0xFF}
 
 func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -37,16 +40,20 @@ func main() {
 	}
 
 	running := true
-	var x int32 = 0
-	var y int32 = 0
+	var p1 int16 = 0
+	var p2 int16 = 0
 	for running {
 
 		renderer.SetDrawColor(0, 0, 0, 0xFF)
 		renderer.Clear()
 
-		rect := sdl.Rect{X: x, Y: y, W: 200, H: 200}
-		renderer.SetDrawColor(0xFF, 0, 0, 0xFF)
-		renderer.FillRect(&rect)
+		gfx.CircleColor(renderer, 200, 200, 50, grey)
+		var p1loc float32 = (float32(p1) + MAX_AXIS) / (AXIS_RANGE / 360)
+		gfx.ArcColor(renderer, 200, 200, 70, int32(0+p1loc), int32(90+p1loc), red)
+
+		gfx.CircleColor(renderer, 600, 400, 50, grey)
+		var p2loc float32 = (float32(p2) + MAX_AXIS) / (AXIS_RANGE / 360)
+		gfx.ArcColor(renderer, 600, 400, 70, int32(0+p2loc), int32(90+p2loc), blue)
 
 		renderer.Present()
 
@@ -57,13 +64,10 @@ func main() {
 				running = false
 				break
 			case *sdl.JoyAxisEvent:
-				fmt.Printf("axis %d %06d\n", e.Axis, e.Value)
 				if e.Axis == 0 {
-					x = int32(float32(int32(e.Value)+MAX_AXIS) * AXIS_WIDTH_STEP)
-					fmt.Printf("new x %d\n", x)
+					p1 = e.Value
 				} else if e.Axis == 1 {
-					y = int32(float32(int32(e.Value)+MAX_AXIS) * AXIS_HEIGHT_STEP)
-					fmt.Printf("new y %d\n", y)
+					p2 = e.Value
 				}
 			}
 		}
