@@ -1,15 +1,16 @@
 package main
 
 import (
+	"math"
+
 	"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
-	"math"
 )
 
 const WINDOW_WIDTH = 800
 const WINDOW_HEIGHT = 600
-const SCREEN_WIDTH = WINDOW_WIDTH
-const SCREEN_HEIGHT = WINDOW_HEIGHT
+const SCREEN_WIDTH = WINDOW_WIDTH * 4
+const SCREEN_HEIGHT = WINDOW_HEIGHT * 4
 
 const MAX_AXIS = math.MaxInt16
 const MIN_AXIS = math.MinInt16
@@ -26,13 +27,29 @@ func main() {
 	}
 	defer sdl.Quit()
 
+	err := sdl.GLSetAttribute(sdl.GL_MULTISAMPLEBUFFERS, 1)
+	if err != nil {
+		panic(err)
+	}
+	err = sdl.GLSetAttribute(sdl.GL_MULTISAMPLESAMPLES, 16)
+	if err != nil {
+		panic(err)
+	}
+
 	// sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
-	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, sdl.WINDOW_SHOWN|sdl.WINDOW_OPENGL)
 	if err != nil {
 		panic(err)
 	}
 	defer window.Destroy()
 	// sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
+
+	_, err = window.GLCreateContext()
+	if err != nil {
+		panic(err)
+	}
+
+	// 	gl.Enable(gl.MULTISAMPLE)
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
@@ -43,7 +60,7 @@ func main() {
 
 	joystick := sdl.JoystickOpen(0)
 	if joystick == nil {
-		panic(sdl.GetError())
+		// panic(sdl.GetError())
 	}
 
 	running := true
