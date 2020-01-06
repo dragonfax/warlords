@@ -27,11 +27,12 @@ var blue sdl.Color = sdl.Color{0x00, 0x00, 0xFF, 0xFF}
 var white sdl.Color = sdl.Color{0xFF, 0xFF, 0xFF, 0xFF}
 
 // physics
-const LEVEL_WIDTH_METERS = WINDOW_WIDTH / 10                         // 800 px window becomes 80 meters in world
+const LEVEL_WIDTH_METERS = 80                                        // 80 meters across the physics world
 const PIXEL_SIZE_METERS = float64(LEVEL_WIDTH_METERS) / SCREEN_WIDTH // width/height of a single pixel in meters
+const LEVEL_HEIGHT_METERS = SCREEN_HEIGHT * PIXEL_SIZE_METERS
 
-const baseRadius = SCREEN_WIDTH / 16
-const bulletRadius = baseRadius / 10
+const baseRadius = SCREEN_WIDTH / 20
+const bulletRadius = baseRadius / 5
 const shieldRadius = SCREEN_HEIGHT / 10
 
 const p1centerX int32 = SCREEN_WIDTH * 0.25
@@ -41,7 +42,79 @@ const p2centerY int32 = SCREEN_HEIGHT * 2 / 3
 
 const deg2rad = math.Pi / 180
 
-var space *d2.Space
+func physicsToPixels(meters float32) int32 {
+	return int32(float64(meters) / PIXEL_SIZE_METERS)
+}
+
+func pixelsToPhysics(pixels int32) float32 {
+	return float32(float64(pixels) * PIXEL_SIZE_METERS)
+}
+
+type SegmentDef struct {
+	Start vect.Vect
+	End   vect.Vect
+}
+
+type Polar struct {
+	Radius float32
+	Angle  float32 // radians
+}
+
+func Cos32(a float32) float32 {
+	return float32(math.Cos(float64(a)))
+}
+
+func Sin32(a float32) float32 {
+	return float32(math.Sin(float64(a)))
+}
+
+func (p Polar) toCart() vect.Vect {
+	return vect.Vect{vect.Float(p.Radius * Cos32(p.Angle)), vect.Float(p.Radius * Sin32(p.Angle))}
+}
+
+func generateArcSegments(innerRadius float32, outterRadius float32, angle float32, points int) []SegmentDef {
+
+	segments := make([]SegmentDef, 0, 4+points*2)
+
+	// start line
+	start := Polar{Radius: innerRadius, Angle: 0}.toCart()
+	end := Polar{Radius: outterRadius, Angle: 0}.toCart()
+	segments = append(segments, SegmentDef{
+		Start: start,
+		End:   end,
+	})
+
+	// front curve
+	angleIncrement := angle / float32(points)
+	for i := float32(0.0); i <= float32(points); i++ {
+		start = Polar{Radius: outterRadius, Angle: i * angleIncrement}.toCart()
+		end = Polar{Radius: outterRadius, Angle: (i + 1) * angleIncrement}.toCart()
+		segments = append(segments, SegmentDef{
+			Start: start,
+			End:   end,
+		})
+	}
+
+	// end line
+	start = Polar{Radius: outterRadius, Angle: angle}.toCart()
+	end = Polar{Radius: innerRadius, Angle: angle}.toCart()
+	segments = append(segments, SegmentDef{
+		Start: start,
+		End:   end,
+	})
+
+	// back curve
+	for i := float32(points); i >= 0.0; i-- {
+		start = Polar{Radius: innerRadius, Angle: i * angleIncrement}.toCart()
+		end = Polar{Radius: innerRadius, Angle: (i + 1) * angleIncrement}.toCart()
+		segments = append(segments, SegmentDef{
+			Start: end,
+			End:   start,
+		})
+	}
+
+	return segments
+}
 
 func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -86,27 +159,27 @@ func main() {
 	}
 
 	/* Physics */
-	space = d2.NewSpace()
+	var space = d2.NewSpace()
 	space.Gravity = vect.Vect{X: 0, Y: 0}
 
-	type Point struct {
-		X vect.Float
-		Y vect.Float
-	}
-
-	segments := []struct {
-		S Point
-		E Point
-	}{
-		{Point{0, 0}, Point{0, vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}},
-		{Point{0, 0}, Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), 0}},
-		{Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}, Point{0, vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}},
-		{Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}, Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), 0}},
-	}
-
+	// Walls around the perimeter
 	wallsBody := d2.NewBodyStatic()
+	segments := []SegmentDef{
+		{vect.Vect{0, 0}, vect.Vect{0, 1}},
+		{vect.Vect{0, 0}, vect.Vect{1, 0}},
+		{vect.Vect{1, 1}, vect.Vect{0, 1}},
+		{vect.Vect{1, 1}, vect.Vect{1, 0}},
+	}
 	for _, s := range segments {
-		segment := d2.NewSegment(vect.Vect{X: s.S.Y, Y: s.S.Y}, vect.Vect{X: s.E.X, Y: s.E.Y}, 0)
+		segment := d2.NewSegment(
+			vect.Vect{
+				X: s.Start.X * LEVEL_WIDTH_METERS,
+				Y: s.Start.Y * vect.Float(LEVEL_HEIGHT_METERS),
+			},
+			vect.Vect{
+				X: s.End.X * LEVEL_WIDTH_METERS,
+				Y: s.End.Y * vect.Float(LEVEL_HEIGHT_METERS),
+			}, 0)
 		segment.SetElasticity(1.0)
 		segment.SetFriction(0)
 		wallsBody.AddShape(segment)
