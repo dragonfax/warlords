@@ -107,13 +107,15 @@ func main() {
 	wallsBody := d2.NewBodyStatic()
 	for _, s := range segments {
 		segment := d2.NewSegment(vect.Vect{X: s.S.Y, Y: s.S.Y}, vect.Vect{X: s.E.X, Y: s.E.Y}, 0)
-		segment.SetElasticity(0.6)
+		segment.SetElasticity(1.0)
+		segment.SetFriction(0)
 		wallsBody.AddShape(segment)
 	}
 	space.AddBody(wallsBody)
 
 	castle1 := d2.NewCircle(vect.Vector_Zero, float32(baseRadius*PIXEL_SIZE_METERS))
-	castle1.SetElasticity(0.6)
+	castle1.SetElasticity(1.0)
+	castle1.SetFriction(0)
 	staticBody := d2.NewBodyStatic()
 	staticBody.SetPosition(vect.Vect{
 		X: vect.Float(float64(p1centerX) * PIXEL_SIZE_METERS),
@@ -123,7 +125,8 @@ func main() {
 	space.AddBody(staticBody)
 
 	castle2 := d2.NewCircle(vect.Vector_Zero, float32(baseRadius*PIXEL_SIZE_METERS))
-	castle2.SetElasticity(0.6)
+	castle2.SetElasticity(1.0)
+	castle2.SetFriction(0)
 	staticBody = d2.NewBodyStatic()
 	staticBody.SetPosition(vect.Vect{
 		X: vect.Float(float64(p2centerX) * PIXEL_SIZE_METERS),
@@ -134,6 +137,7 @@ func main() {
 
 	bullet := d2.NewCircle(vect.Vector_Zero, float32(bulletRadius*PIXEL_SIZE_METERS))
 	bullet.SetElasticity(1.0)
+	bullet.SetFriction(0)
 	body := d2.NewBody(vect.Float(1), bullet.Moment(float32(1)))
 	body.SetPosition(vect.Vect{
 		X: vect.Float(SCREEN_WIDTH / 2 * PIXEL_SIZE_METERS),
