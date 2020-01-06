@@ -132,7 +132,7 @@ func main() {
 	}
 
 	// sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
-	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, sdl.WINDOW_SHOWN|sdl.WINDOW_OPENGL)
+	window, err := sdl.CreateWindow("warlords", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, sdl.WINDOW_SHOWN|sdl.WINDOW_OPENGL)
 	if err != nil {
 		panic(err)
 	}
@@ -143,8 +143,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	// 	gl.Enable(gl.MULTISAMPLE)
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
@@ -196,6 +194,19 @@ func main() {
 	})
 	staticBody.AddShape(castle1)
 	space.AddBody(staticBody)
+
+	var verts d2.Vertices = make(d2.Vertices, 0, 0)
+	for _, segment := range generateArcSegments(baseRadius, shieldRadius, math.Pi/3, 5) {
+		verts = append(verts, segment.Start)
+	}
+	if !verts.ValidatePolygon() {
+		panic("bumper polygon not valid for chipmunk")
+	}
+	bumper1 := d2.NewPolygon(verts, vect.Vector_Zero)
+	bumper1.SetElasticity(1.0)
+	bumper1.SetFriction(0)
+	bumper1Body := d2.NewBody()
+	space.AddBody(bumper1Body)
 
 	castle2 := d2.NewCircle(vect.Vector_Zero, float32(baseRadius*PIXEL_SIZE_METERS))
 	castle2.SetElasticity(1.0)
