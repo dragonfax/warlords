@@ -27,8 +27,8 @@ var blue sdl.Color = sdl.Color{0x00, 0x00, 0xFF, 0xFF}
 var white sdl.Color = sdl.Color{0xFF, 0xFF, 0xFF, 0xFF}
 
 // physics
-const LEVEL_WIDTH_METERS = 80                                        // 80 meters across the physics world
-const PIXEL_SIZE_METERS = float64(LEVEL_WIDTH_METERS) / SCREEN_WIDTH // width/height of a single pixel in meters
+const LEVEL_WIDTH_METERS = 80.0                             // 80 meters across the physics world
+const PIXEL_SIZE_METERS = LEVEL_WIDTH_METERS / SCREEN_WIDTH // width/height of a single pixel in meters
 const LEVEL_HEIGHT_METERS = SCREEN_HEIGHT * PIXEL_SIZE_METERS
 
 const baseRadius = SCREEN_WIDTH / 20
@@ -174,11 +174,11 @@ func main() {
 		segment := d2.NewSegment(
 			vect.Vect{
 				X: s.Start.X * LEVEL_WIDTH_METERS,
-				Y: s.Start.Y * vect.Float(LEVEL_HEIGHT_METERS),
+				Y: s.Start.Y * LEVEL_HEIGHT_METERS,
 			},
 			vect.Vect{
 				X: s.End.X * LEVEL_WIDTH_METERS,
-				Y: s.End.Y * vect.Float(LEVEL_HEIGHT_METERS),
+				Y: s.End.Y * LEVEL_HEIGHT_METERS,
 			}, 0)
 		segment.SetElasticity(1.0)
 		segment.SetFriction(0)
