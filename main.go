@@ -85,44 +85,31 @@ func main() {
 		// panic(sdl.GetError())
 	}
 
-	/*
-		// physics
-		castle1BodyDef := d2.B2BodyDef{}
-		castle1BodyDef.Position.Set(float64(p1centerX)*PIXEL_SIZE_METERS, float64(p1centerY)*PIXEL_SIZE_METERS)
-		castle1Body := world.CreateBody(&castle1BodyDef)
-		castle1Shape := d2.B2CircleShape{}
-		castle1Shape.SetRadius(baseRadius * PIXEL_SIZE_METERS)
-		castle1Body.CreateFixture(castle1Shape, 0.0)
-
-		castle2BodyDef := d2.B2BodyDef{}
-		castle2BodyDef.Position.Set(float64(p2centerX)*PIXEL_SIZE_METERS, float64(p2centerY)*PIXEL_SIZE_METERS)
-		castle2Body := world.CreateBody(&castle2BodyDef)
-		castle2Shape := d2.B2CircleShape{}
-		castle2Shape.SetRadius(baseRadius * PIXEL_SIZE_METERS)
-		castle2Body.CreateFixture(castle2Shape, 0.0)
-
-		bulletBodyDef := d2.B2BodyDef{Type: d2.B2BodyType.B2_dynamicBody}
-		bulletBodyDef.Bullet = true
-		bulletBodyDef.Position.Set(SCREEN_WIDTH/2*PIXEL_SIZE_METERS, SCREEN_HEIGHT/2*PIXEL_SIZE_METERS)
-		bulletBody := world.CreateBody(&bulletBodyDef)
-		bulletShape := d2.B2CircleShape{}
-		bulletShape.SetRadius(bulletRadius)
-		bulletFixture := d2.B2FixtureDef{}
-		bulletFixture.Shape = bulletShape
-		bulletFixture.Density = 1.0
-		bulletFixture.Friction = 0.0
-		bulletBody.CreateFixtureFromDef(&bulletFixture)
-
-		v := bulletBody.GetWorldVector(d2.B2Vec2{X: -1, Y: -1})
-		v.OperatorScalarMulInplace(bulletBody.GetMass() * 10)
-		fmt.Printf("mass: %f\n", bulletBody.GetMass())
-		bulletBody.ApplyLinearImpulseToCenter(d2.B2Vec2{X: -10, Y: -10}, true)
-	*/
-
+	/* Physics */
 	space = d2.NewSpace()
-	space.Gravity = vect.Vect{X: 0, Y: -10}
+	space.Gravity = vect.Vect{X: 0, Y: 0}
 
-	bullet := d2.NewCircle(vect.Vector_Zero, bulletRadius)
+	castle1 := d2.NewCircle(vect.Vector_Zero, float32(baseRadius*PIXEL_SIZE_METERS))
+	castle1.SetElasticity(0.6)
+	staticBody := d2.NewBodyStatic()
+	staticBody.SetPosition(vect.Vect{
+		X: vect.Float(float64(p1centerX) * PIXEL_SIZE_METERS),
+		Y: vect.Float(float64(p1centerY) * PIXEL_SIZE_METERS),
+	})
+	staticBody.AddShape(castle1)
+	space.AddBody(staticBody)
+
+	castle2 := d2.NewCircle(vect.Vector_Zero, float32(baseRadius*PIXEL_SIZE_METERS))
+	castle2.SetElasticity(0.6)
+	staticBody = d2.NewBodyStatic()
+	staticBody.SetPosition(vect.Vect{
+		X: vect.Float(float64(p2centerX) * PIXEL_SIZE_METERS),
+		Y: vect.Float(float64(p2centerY) * PIXEL_SIZE_METERS),
+	})
+	staticBody.AddShape(castle2)
+	space.AddBody(staticBody)
+
+	bullet := d2.NewCircle(vect.Vector_Zero, float32(bulletRadius*PIXEL_SIZE_METERS))
 	bullet.SetElasticity(1.0)
 	body := d2.NewBody(vect.Float(1), bullet.Moment(float32(1)))
 	body.SetPosition(vect.Vect{
@@ -131,12 +118,7 @@ func main() {
 	})
 	body.AddShape(bullet)
 	space.AddBody(body)
-
-	/*
-		timestep := 1.0 / 60.0
-		velocityIterations := 6
-		positionIterations := 2
-	*/
+	body.AddVelocity(-10, -10)
 
 	// game loop
 	running := true
@@ -145,11 +127,6 @@ func main() {
 	ticker := time.NewTicker(time.Second / 60)
 	for running {
 
-		/*
-			world.Step(timestep, velocityIterations, positionIterations)
-			bulletPosition := bulletBody.GetPosition()
-			fmt.Printf("bullet: %v\n", bulletPosition)
-		*/
 		space.Step(vect.Float(1.0 / 60))
 		bulletPosition := bullet.Body.Position()
 
@@ -157,12 +134,12 @@ func main() {
 		renderer.Clear()
 
 		var p1loc float32 = ((float32(p1) + MAX_AXIS) / (AXIS_RANGE / 360) * AXIS_SENSITIVITY)
-		gfx.FilledPieColor(renderer, p1centerX, p1centerY, shieldRadius, int32(0+p1loc), int32(90+p1loc), red)
-		gfx.FilledCircleColor(renderer, p1centerX, p1centerY, baseRadius, grey)
+		gfx.FilledPieColor(renderer, int32(float64(castle1.Body.Position().X)/PIXEL_SIZE_METERS), int32(float64(castle1.Body.Position().Y)/PIXEL_SIZE_METERS), shieldRadius, int32(0+p1loc), int32(90+p1loc), red)
+		gfx.FilledCircleColor(renderer, int32(float64(castle1.Body.Position().X)/PIXEL_SIZE_METERS), int32(float64(castle1.Body.Position().Y)/PIXEL_SIZE_METERS), baseRadius, grey)
 
 		var p2loc float32 = ((float32(p2) + MAX_AXIS) / (AXIS_RANGE / 360) * AXIS_SENSITIVITY)
-		gfx.FilledPieColor(renderer, p2centerX, p2centerY, shieldRadius, int32(0+p2loc), int32(90+p2loc), blue)
-		gfx.FilledCircleColor(renderer, p2centerX, p2centerY, baseRadius, grey)
+		gfx.FilledPieColor(renderer, int32(float64(castle2.Body.Position().X)/PIXEL_SIZE_METERS), int32(float64(castle2.Body.Position().Y)/PIXEL_SIZE_METERS), shieldRadius, int32(0+p2loc), int32(90+p2loc), blue)
+		gfx.FilledCircleColor(renderer, int32(float64(castle2.Body.Position().X)/PIXEL_SIZE_METERS), int32(float64(castle2.Body.Position().Y)/PIXEL_SIZE_METERS), baseRadius, grey)
 
 		gfx.FilledCircleColor(renderer, int32(float64(bulletPosition.X)/PIXEL_SIZE_METERS), int32(float64(bulletPosition.Y)/PIXEL_SIZE_METERS), bulletRadius, white)
 
