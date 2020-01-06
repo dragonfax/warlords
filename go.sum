@@ -1,4 +1,11 @@
+github.com/ByteArena/box2d v1.0.2 h1:f7f9KEQWhCs1n516DMLzi5w6u0MeeE78Mes4fWMcj9k=
+github.com/ByteArena/box2d v1.0.2/go.mod h1:LzEuxY9iCz+tskfWCY3o0ywYBRafDDugdSj+/YGI6sE=
+github.com/erincatto/Box2D v2.3.1+incompatible h1:gMOX8+isxDAAZ6n6XftmqWMZqnDNpszLFqsKcpO5IbQ=
 github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7 h1:SCYMcCJ89LjRGwEa0tRluNRiMjZHalQZrVrvTbPh+qw=
 github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7/go.mod h1:482civXOzJJCPzJ4ZOX/pwvXBWSnzD4OKMdH4ClKGbk=
+github.com/neguse/go-box2d-lite v0.0.0-20170921151050-5d8ed9b7272b h1:+67TGbwfgeB5o03Rx+ZBW44zAQ+wUujcwdRA0p9CbJI=
+github.com/neguse/go-box2d-lite v0.0.0-20170921151050-5d8ed9b7272b/go.mod h1:kvKwD9codtns5mvpA53V3vLnqFb/Ahcu8zgkGM0SIbI=
+github.com/oiotoxt/go-box2d-lite v0.0.0-20190924044831-8d4ddcbb8e43 h1:KjXvrw5Ghg5iuaLlXFo77PhVA6euZ4J440J0fqdycz4=
+github.com/oiotoxt/go-box2d-lite v0.0.0-20190924044831-8d4ddcbb8e43/go.mod h1:NRsSEJMONN/wBnV1r0Ft6W785n1aBfwBPvWVKxUeMx0=
 github.com/veandco/go-sdl2 v0.3.3 h1:4/TirgB2MQ7oww3pM3Yfgf1YbChMlAQAmiCPe5koK0I=
 github.com/veandco/go-sdl2 v0.3.3/go.mod h1:FB+kTpX9YTE+urhYiClnRzpOXbiWgaU3+5F2AB78DPg=
