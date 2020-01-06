@@ -89,6 +89,29 @@ func main() {
 	space = d2.NewSpace()
 	space.Gravity = vect.Vect{X: 0, Y: 0}
 
+	type Point struct {
+		X vect.Float
+		Y vect.Float
+	}
+
+	segments := []struct {
+		S Point
+		E Point
+	}{
+		{Point{0, 0}, Point{0, vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}},
+		{Point{0, 0}, Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), 0}},
+		{Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}, Point{0, vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}},
+		{Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), vect.Float(SCREEN_HEIGHT * PIXEL_SIZE_METERS)}, Point{vect.Float(SCREEN_WIDTH * PIXEL_SIZE_METERS), 0}},
+	}
+
+	wallsBody := d2.NewBodyStatic()
+	for _, s := range segments {
+		segment := d2.NewSegment(vect.Vect{X: s.S.Y, Y: s.S.Y}, vect.Vect{X: s.E.X, Y: s.E.Y}, 0)
+		segment.SetElasticity(0.6)
+		wallsBody.AddShape(segment)
+	}
+	space.AddBody(wallsBody)
+
 	castle1 := d2.NewCircle(vect.Vector_Zero, float32(baseRadius*PIXEL_SIZE_METERS))
 	castle1.SetElasticity(0.6)
 	staticBody := d2.NewBodyStatic()
@@ -118,7 +141,7 @@ func main() {
 	})
 	body.AddShape(bullet)
 	space.AddBody(body)
-	body.AddVelocity(-10, -10)
+	body.AddVelocity(-20, -20)
 
 	// game loop
 	running := true
