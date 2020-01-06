@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"math"
+	"time"
 
 	"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 
-	d2 "github.com/neguse/go-box2d-lite/box2dlite"
+	d2 "github.com/vova616/chipmunk"
+	"github.com/vova616/chipmunk/vect"
 )
 
 const WINDOW_WIDTH = 800
@@ -38,8 +39,9 @@ const p1centerY int32 = SCREEN_HEIGHT / 3
 const p2centerX int32 = SCREEN_WIDTH * 0.75
 const p2centerY int32 = SCREEN_HEIGHT * 2 / 3
 
-var gravity = d2.MakeB2Vec2(0.0, -10.0)
-var world = d2.MakeB2World(gravity)
+const deg2rad = math.Pi / 180
+
+var space *d2.Space
 
 func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -83,51 +85,73 @@ func main() {
 		// panic(sdl.GetError())
 	}
 
-	// physics
-	castle1BodyDef := d2.B2BodyDef{}
-	castle1BodyDef.Position.Set(float64(p1centerX)*PIXEL_SIZE_METERS, float64(p1centerY)*PIXEL_SIZE_METERS)
-	castle1Body := world.CreateBody(&castle1BodyDef)
-	castle1Shape := d2.B2CircleShape{}
-	castle1Shape.SetRadius(baseRadius * PIXEL_SIZE_METERS)
-	castle1Body.CreateFixture(castle1Shape, 0.0)
+	/*
+		// physics
+		castle1BodyDef := d2.B2BodyDef{}
+		castle1BodyDef.Position.Set(float64(p1centerX)*PIXEL_SIZE_METERS, float64(p1centerY)*PIXEL_SIZE_METERS)
+		castle1Body := world.CreateBody(&castle1BodyDef)
+		castle1Shape := d2.B2CircleShape{}
+		castle1Shape.SetRadius(baseRadius * PIXEL_SIZE_METERS)
+		castle1Body.CreateFixture(castle1Shape, 0.0)
 
-	castle2BodyDef := d2.B2BodyDef{}
-	castle2BodyDef.Position.Set(float64(p2centerX)*PIXEL_SIZE_METERS, float64(p2centerY)*PIXEL_SIZE_METERS)
-	castle2Body := world.CreateBody(&castle2BodyDef)
-	castle2Shape := d2.B2CircleShape{}
-	castle2Shape.SetRadius(baseRadius * PIXEL_SIZE_METERS)
-	castle2Body.CreateFixture(castle2Shape, 0.0)
+		castle2BodyDef := d2.B2BodyDef{}
+		castle2BodyDef.Position.Set(float64(p2centerX)*PIXEL_SIZE_METERS, float64(p2centerY)*PIXEL_SIZE_METERS)
+		castle2Body := world.CreateBody(&castle2BodyDef)
+		castle2Shape := d2.B2CircleShape{}
+		castle2Shape.SetRadius(baseRadius * PIXEL_SIZE_METERS)
+		castle2Body.CreateFixture(castle2Shape, 0.0)
 
-	bulletBodyDef := d2.B2BodyDef{Type: d2.B2BodyType.B2_dynamicBody}
-	bulletBodyDef.Bullet = true
-	bulletBodyDef.Position.Set(SCREEN_WIDTH/2*PIXEL_SIZE_METERS, SCREEN_HEIGHT/2*PIXEL_SIZE_METERS)
-	bulletBody := world.CreateBody(&bulletBodyDef)
-	bulletShape := d2.B2CircleShape{}
-	bulletShape.SetRadius(bulletRadius)
-	bulletFixture := d2.B2FixtureDef{}
-	bulletFixture.Shape = bulletShape
-	bulletFixture.Density = 1.0
-	bulletFixture.Friction = 0.0
-	bulletBody.CreateFixtureFromDef(&bulletFixture)
+		bulletBodyDef := d2.B2BodyDef{Type: d2.B2BodyType.B2_dynamicBody}
+		bulletBodyDef.Bullet = true
+		bulletBodyDef.Position.Set(SCREEN_WIDTH/2*PIXEL_SIZE_METERS, SCREEN_HEIGHT/2*PIXEL_SIZE_METERS)
+		bulletBody := world.CreateBody(&bulletBodyDef)
+		bulletShape := d2.B2CircleShape{}
+		bulletShape.SetRadius(bulletRadius)
+		bulletFixture := d2.B2FixtureDef{}
+		bulletFixture.Shape = bulletShape
+		bulletFixture.Density = 1.0
+		bulletFixture.Friction = 0.0
+		bulletBody.CreateFixtureFromDef(&bulletFixture)
 
-	v := bulletBody.GetWorldVector(d2.B2Vec2{X: -1, Y: -1})
-	v.OperatorScalarMulInplace(bulletBody.GetMass() * 10)
-	fmt.Printf("mass: %f\n", bulletBody.GetMass())
-	bulletBody.ApplyLinearImpulseToCenter(d2.B2Vec2{X: -10, Y: -10}, true)
+		v := bulletBody.GetWorldVector(d2.B2Vec2{X: -1, Y: -1})
+		v.OperatorScalarMulInplace(bulletBody.GetMass() * 10)
+		fmt.Printf("mass: %f\n", bulletBody.GetMass())
+		bulletBody.ApplyLinearImpulseToCenter(d2.B2Vec2{X: -10, Y: -10}, true)
+	*/
 
-	timestep := 1.0 / 60.0
-	velocityIterations := 6
-	positionIterations := 2
+	space = d2.NewSpace()
+	space.Gravity = vect.Vect{X: 0, Y: -10}
+
+	bullet := d2.NewCircle(vect.Vector_Zero, bulletRadius)
+	bullet.SetElasticity(1.0)
+	body := d2.NewBody(vect.Float(1), bullet.Moment(float32(1)))
+	body.SetPosition(vect.Vect{
+		X: vect.Float(SCREEN_WIDTH / 2 * PIXEL_SIZE_METERS),
+		Y: vect.Float(SCREEN_HEIGHT / 2 * PIXEL_SIZE_METERS),
+	})
+	body.AddShape(bullet)
+	space.AddBody(body)
+
+	/*
+		timestep := 1.0 / 60.0
+		velocityIterations := 6
+		positionIterations := 2
+	*/
 
 	// game loop
 	running := true
 	var p1 int16 = 0
 	var p2 int16 = 0
+	ticker := time.NewTicker(time.Second / 60)
 	for running {
 
-		world.Step(timestep, velocityIterations, positionIterations)
-		bulletPosition := bulletBody.GetPosition()
-		fmt.Printf("bullet: %v\n", bulletPosition)
+		/*
+			world.Step(timestep, velocityIterations, positionIterations)
+			bulletPosition := bulletBody.GetPosition()
+			fmt.Printf("bullet: %v\n", bulletPosition)
+		*/
+		space.Step(vect.Float(1.0 / 60))
+		bulletPosition := bullet.Body.Position()
 
 		renderer.SetDrawColor(0, 0, 0, 0xFF)
 		renderer.Clear()
@@ -140,7 +164,7 @@ func main() {
 		gfx.FilledPieColor(renderer, p2centerX, p2centerY, shieldRadius, int32(0+p2loc), int32(90+p2loc), blue)
 		gfx.FilledCircleColor(renderer, p2centerX, p2centerY, baseRadius, grey)
 
-		gfx.FilledCircleColor(renderer, int32(bulletPosition.X/PIXEL_SIZE_METERS), int32(bulletPosition.Y/PIXEL_SIZE_METERS), bulletRadius, white)
+		gfx.FilledCircleColor(renderer, int32(float64(bulletPosition.X)/PIXEL_SIZE_METERS), int32(float64(bulletPosition.Y)/PIXEL_SIZE_METERS), bulletRadius, white)
 
 		renderer.Present()
 
@@ -158,5 +182,6 @@ func main() {
 				}
 			}
 		}
+		<-ticker.C
 	}
 }

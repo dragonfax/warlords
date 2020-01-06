@@ -9,3 +9,5 @@ github.com/oiotoxt/go-box2d-lite v0.0.0-20190924044831-8d4ddcbb8e43 h1:KjXvrw5Gh
 github.com/oiotoxt/go-box2d-lite v0.0.0-20190924044831-8d4ddcbb8e43/go.mod h1:NRsSEJMONN/wBnV1r0Ft6W785n1aBfwBPvWVKxUeMx0=
 github.com/veandco/go-sdl2 v0.3.3 h1:4/TirgB2MQ7oww3pM3Yfgf1YbChMlAQAmiCPe5koK0I=
 github.com/veandco/go-sdl2 v0.3.3/go.mod h1:FB+kTpX9YTE+urhYiClnRzpOXbiWgaU3+5F2AB78DPg=
+github.com/vova616/chipmunk v0.0.0-20180914035118-c3710bbc8933 h1:/0NyCSo8ffYPuc6KyanXavxaF3D1YE16PrrmtOnXqGk=
+github.com/vova616/chipmunk v0.0.0-20180914035118-c3710bbc8933/go.mod h1:ptbc/tNoFjKw1fVLyvtXQwISNbF7EJ3abLsKI+LFUEk=
